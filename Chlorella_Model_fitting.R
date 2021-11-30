@@ -75,14 +75,22 @@ plotting_data <-
   select(nested_data, 
          organism, experiment, growth_rate, bio.replicate, data) %>% 
   
-  # regroup - replicates within the same group -- for doing mean, sd
-  ungroup() %>% group_by(organism, experiment) %>% 
- 
   # unnest the OD vs Time data
-  unnest(cols = data)
+  unnest(cols = data) %>% 
 
+  # regroup - replicates within the same group -- for doing mean, sd
+  ungroup() %>% group_by(organism, experiment, Time) %>% 
   
-  #mutate(average = map_dbl(data, ~ mean(OD)))
+  # summarizing data : mean and SD of biological replicates
+  mutate(
+    across(c('OD', 'bio.replicate'), 
+           lst(
+             mean = ~ mean(.x, na.rm = TRUE),
+             sd =  ~ sd(.x, na.rm = TRUE)) 
+           )
+    )
+    
+    # OD_mean = mean(OD))
 
 
 # GOing to plot vectorized later--
